@@ -1,65 +1,55 @@
 import IReviewsRepository from '@modules/review/repositories/IReviewsRepository';
 import ICreateReviewDTO from '@modules/review/dtos/ICreateReviewDTO';
 import IReviewDTO from '@modules/review/infra/mongo/dtos/IReviewDTO';
-import Movie from '@shared/infra/mongoose/models/Movie';
-import ip from 'ip';
 import AppError from '@shared/erros/AppError';
 
 class FakeReviewRepository implements IReviewsRepository {
+  private reviews: IReviewDTO[] = [];
+
   public async create(data: ICreateReviewDTO): Promise<IReviewDTO> {
-    const { movie_id } = data;
-    const ipAddress = ip.address();
-    const review = await Movie.create({
-      user: ipAddress,
-      movie_id,
-      like: false,
-      dislike: false,
-    });
-    return review;
+    const newReview = {} as IReviewDTO;
+    console.log('------------------------');
+    const { user, movie_id, like, dislike } = data;
+
+    Object.assign(newReview, { user, movie_id, like, dislike });
+
+    this.reviews.push(newReview);
+
+    return newReview;
   }
 
   public async like(movie_id: string): Promise<IReviewDTO> {
-    const review = await this.findByMovieId(movie_id);
-    review.like = !review.like;
+    const index = this.reviews.findIndex(
+      review => review.movie_id === movie_id,
+    );
+    this.reviews[index].like = true;
+    this.reviews[index].dislike = false;
 
-    if (review.like) {
-      review.dislike = false;
-    }
-
-    await review.save();
-
-    return review;
+    return this.reviews[index];
   }
 
   public async dislike(movie_id: string): Promise<IReviewDTO> {
-    const review = await this.findByMovieId(movie_id);
-    review.dislike = !review.dislike;
+    const index = this.reviews.findIndex(
+      review => review.movie_id === movie_id,
+    );
+    this.reviews[index].like = false;
+    this.reviews[index].dislike = true;
 
-    if (review.like) {
-      review.dislike = false;
-    }
-
-    await review.save();
-
-    return review;
+    return this.reviews[index];
   }
 
   public async findByUser(user: string): Promise<IReviewDTO[] | null> {
-    const reviews = await Movie.find({
-      where: user,
-    });
-    return reviews;
+    const findReview = this.reviews.filter(review => review.user === user);
+
+    return findReview;
   }
 
-  public async findByMovieId(movie_id: string): Promise<IReviewDTO> {
-    const review = await Movie.findOne({
-      where: movie_id,
-    });
+  public async findByMovieId(movie_id: string): Promise<IReviewDTO | null> {
+    const findReview = this.reviews.find(
+      review => review.movie_id === movie_id,
+    );
 
-    if (!review) {
-      throw new AppError(`No review found by id ${movie_id}`);
-    }
-    return review;
+    return findReview || null;
   }
 }
 

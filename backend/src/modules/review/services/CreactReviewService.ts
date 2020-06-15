@@ -1,8 +1,8 @@
-import { inject, injectable } from 'tsyringe';
 import IReviewDTO from '@modules/review/infra/mongo/dtos/IReviewDTO';
+import IReviewsRepository from '@modules/review/repositories/IReviewsRepository';
+import { inject, injectable } from 'tsyringe';
 
 import AppError from '@shared/erros/AppError';
-import IReviewsRepository from '@modules/review/repositories/IReviewsRepository';
 
 interface IRequest {
   user: string;

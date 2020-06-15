@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import 'reflect-metadata';
 // -- Para uso das variáveis de ambiente
 import 'dotenv/config';
