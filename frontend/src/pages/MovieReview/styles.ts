@@ -1,5 +1,10 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { shade } from 'polished';
+
+interface ReviewProps {
+  like: boolean | null;
+  dislike: boolean | null;
+}
 
 export const Container = styled.div`
   position: relative;
@@ -67,7 +72,7 @@ export const Content = styled.main`
   display: flex;
 `;
 
-export const MovieInfo = styled.section`
+export const MovieInfo = styled.section<ReviewProps>`
   margin-top: 80px;
 
   header {
@@ -76,8 +81,8 @@ export const MovieInfo = styled.section`
     justify-content: center;
 
     img {
-      width: 180px;
-      height: 270px;
+      width: 210px;
+      height: 305px;
       border-radius: 3%;
     }
 
@@ -86,6 +91,27 @@ export const MovieInfo = styled.section`
 
       h1 {
         font-size: 36px;
+      }
+
+      h4 {
+        font-size: 12px;
+        color: #6c6c80;
+        font-weight: 100;
+
+        /* Regra para a borda ficar vermelha caso exista erro no campo */
+        ${props =>
+          props.like &&
+          css`
+            color: #497300;
+          `}
+
+        /* Regra para o container ficar laranja caso o input esteja em foco. */
+        ${props =>
+          props.dislike &&
+          css`
+            color: #ff0000;
+          `}
+
       }
 
       p {

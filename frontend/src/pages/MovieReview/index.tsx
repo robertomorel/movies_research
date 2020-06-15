@@ -1,31 +1,10 @@
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  Component,
-} from 'react';
-import {
-  FiArrowLeft,
-  FiSearch,
-  FiChevronRight,
-  FiArrowUp,
-  FiArrowDown,
-} from 'react-icons/fi';
+/* eslint-disable no-nested-ternary */
+import React, { useState, useCallback, useEffect } from 'react';
+import { FiArrowLeft } from 'react-icons/fi';
 import { FaHeart, FaHeartBroken } from 'react-icons/fa';
-import * as Yup from 'yup';
-import localIpUrl from 'local-ip-url';
-import enUS from 'date-fns/locale/en-US';
-import { isToday, format, parseISO, isAfter } from 'date-fns';
-import { FormHandles } from '@unform/core';
 import 'react-day-picker/lib/style.css';
-import { Link, useHistory, useRouteMatch } from 'react-router-dom';
-import { Form } from '@unform/web';
-import axios from 'axios';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useToast } from '../../hooks/toast';
-import Input from '../../components/Input';
-import Button from '../../components/Button';
 import {
   Container,
   Content,
@@ -36,7 +15,6 @@ import {
   ReviewActions,
 } from './styles';
 import imgProfile from '../../assets/logo.png';
-import getValidationErrors from '../../utils/getValidationErrors';
 import api from '../../services/api';
 
 interface MovieParams {
@@ -68,8 +46,8 @@ interface InfoMovie {
 
 const MovieReview: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [movie, setMovie] = useState<InfoMovie>({} as InfoMovie);
-  const [movieReview, setMovieReview] = useState<Review>({} as Review);
+  const [movie, setMovie] = useState<InfoMovie | null>(null);
+  const [movieReview, setMovieReview] = useState<Review | null>(null);
   const { params } = useRouteMatch<MovieParams>();
   const history = useHistory();
 
@@ -92,46 +70,29 @@ const MovieReview: React.FC = () => {
 
       findMovieDetail();
 
-      const findReviewAlreadySaved = async (): Promise<void> => {
-        try {
-          const { data } = await api.get(`/reviews/${params.movieID}/me`);
-
-          if (data) {
-            setMovieReview(data);
-          }
-        } catch (err) {
-          console.log(err);
-        }
-      };
-
-      findReviewAlreadySaved();
-
-      const createANewReview = async (): Promise<void> => {
-        // -- Criando registro de crítica...
-        const { data } = await api.post('/reviews', {
-          movie_id: params.movieID,
+      api
+        .get(`/reviews/${params.movieID}/me`)
+        .then(response => {
+          setMovieReview(response.data);
+        })
+        .catch(() => {
+          api
+            .post('/reviews', {
+              movie_id: params.movieID,
+            })
+            .then(resp => {
+              setMovieReview(resp.data);
+            })
+            .catch(err => {
+              console.log(err);
+              addToast({
+                type: 'error',
+                title: 'Review failed!',
+                description:
+                  'Error ocurrency on trying to find or create a new review. Try again!',
+              });
+            });
         });
-
-        if (data) {
-          setMovieReview(data);
-        }
-      };
-
-      // eslint-disable-next-line no-underscore-dangle
-      if (movieReview._id) {
-        return;
-      }
-
-      createANewReview();
-
-      if (!movieReview) {
-        addToast({
-          type: 'error',
-          title: 'Review failed!',
-          description:
-            'Error ocurrency on trying to find or create a new review. Try again!',
-        });
-      }
     } finally {
       setLoading(false);
     }
@@ -168,6 +129,37 @@ const MovieReview: React.FC = () => {
     }
   }, [addToast, params.movieID]);
 
+  const handleDislike = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const setLike = async (): Promise<void> => {
+        const { data } = await api.put('/reviews/dislike', {
+          movie_id: params.movieID,
+        });
+
+        if (data) {
+          setMovieReview(data);
+        }
+      };
+
+      setLike();
+
+      addToast({
+        type: 'success',
+        title: 'Dislike successfull!',
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        title: 'Dislike failed!',
+        description: 'Error ocurrency on disliking a movie. Try again!',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [addToast, params.movieID]);
+
   const handleBack = useCallback(() => {
     history.push('/');
   }, [history]);
@@ -190,14 +182,29 @@ const MovieReview: React.FC = () => {
         </HeaderContent>
       </Header>
       <Content>
-        {loading && <p>Loading...</p>}
+        {(loading || !movie || !movieReview) && <p>Loading...</p>}
 
-        {!loading && movie && (
-          <MovieInfo>
+        {!loading && movie && movieReview && (
+          <MovieInfo
+            like={movieReview && movieReview.like}
+            dislike={movieReview && movieReview.dislike}
+          >
             <header>
               <img src={movie.Poster} alt={movie.Title} />
               <div>
                 <h1>{movie.Title}</h1>
+                <h4>
+                  (
+                  {!movieReview
+                    ? 'No reviewed'
+                    : movieReview.like
+                    ? 'Like'
+                    : movieReview.dislike
+                    ? 'Dislike'
+                    : 'No reviewed'}
+                  )
+                </h4>
+
                 <p>
                   <span>{movie.Actors}</span>
                 </p>
@@ -246,7 +253,7 @@ const MovieReview: React.FC = () => {
             <FaHeart />
           </button>
           <div />
-          <button type="button" onClick={() => {}}>
+          <button type="button" onClick={handleDislike}>
             <FaHeartBroken />
           </button>
         </div>

@@ -229,7 +229,7 @@ const Dashboard: React.FC = () => {
   }, [loading, isIncreasing, movies, userDislikedReviews, userLikedReviews]);
 
   const selectedDateAsText = useMemo(() => {
-    return format(new Date(), "MMMM dd'º'", {
+    return format(new Date(), "MMMM dd'th'", {
       locale: enUS,
     });
   }, []);

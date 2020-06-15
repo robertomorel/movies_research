@@ -8,7 +8,7 @@ import axios from 'axios';
 export default class ReviewsController {
   public async create(request: Request, response: Response): Promise<Response> {
     const { movie_id, like, dislike } = request.body;
-    console.log(request);
+
     const createReview = container.resolve(CreactReviewService);
 
     let { data: user } = await axios.get(
