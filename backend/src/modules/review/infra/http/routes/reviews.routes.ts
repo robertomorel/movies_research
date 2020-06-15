@@ -21,6 +21,8 @@ reviewsRouter.post(
   celebrate({
     [Segments.BODY]: {
       movie_id: Joi.string().required(),
+      like: Joi.boolean(),
+      dislike: Joi.boolean(),
     },
   }),
   reviewController.create,

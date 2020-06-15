@@ -11,7 +11,7 @@ const moviesController = new MoviesController();
 moviesRouter.get(
   '/',
   celebrate({
-    [Segments.BODY]: {
+    [Segments.PARAMS]: {
       id: Joi.string(),
       name: Joi.string(),
     },

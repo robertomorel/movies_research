@@ -2,19 +2,18 @@ import IReviewsRepository from '@modules/review/repositories/IReviewsRepository'
 import ICreateReviewDTO from '@modules/review/dtos/ICreateReviewDTO';
 import IReviewDTO from '@modules/review/infra/mongo/dtos/IReviewDTO';
 import Movie from '@shared/infra/mongoose/models/Movie';
-import ip from 'ip';
+
 import AppError from '@shared/erros/AppError';
 
 class ReviewsRepository implements IReviewsRepository {
   public async create(data: ICreateReviewDTO): Promise<IReviewDTO> {
-    const { movie_id } = data;
-    const ipAddress = ip.address();
+    const { user, movie_id, like, dislike } = data;
 
     const review = await Movie.create({
-      user: ipAddress,
+      user,
       movie_id,
-      like: false,
-      dislike: false,
+      like: !!like,
+      dislike: !!dislike,
     });
     return review;
   }
