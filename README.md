@@ -103,7 +103,7 @@ Este projeto refere-se ao frontend e backend da aplicação com um todo.
 | Tecnologia       | ReactJS                            |
 | API Backend      | NodeJS                             |
 | Validações       | Celebrate-Joi (Back) & Yup (Front) |
-| Testes Unitários | Jest (Back)                        |
+| Testes Unitários | Jest                               |
 
 ---
 

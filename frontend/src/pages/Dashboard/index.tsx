@@ -249,7 +249,7 @@ const Dashboard: React.FC = () => {
 
             <div>
               <span>Wellcome,</span>
-              <strong>{user}</strong>
+              <strong data-testid="user_ip">{user}</strong>
             </div>
           </Profile>
         </HeaderContent>
